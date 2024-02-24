@@ -1,12 +1,12 @@
-  
-n = int(input())
+def gensquares(N):
+    for i in range(1, N + 1):
+        yield i ** 2
 
-factorial = 1
+N = int(input())
 
-for i in range(1, n + 1):
-    factorial *= i
+squares = gensquares(N)
 
-print(factorial)
-
-
+print(f"Squares till to {N}:", end = " ")
+for square in squares:
+    print(square, end = " ")
 
