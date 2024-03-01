@@ -1,12 +1,9 @@
-def gensquares(N):
-    for i in range(1, N + 1):
-        yield i ** 2
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
 
-N = int(input())
+p1 = Person("John", 36)
 
-squares = gensquares(N)
-
-print(f"Squares till to {N}:", end = " ")
-for square in squares:
-    print(square, end = " ")
-
+print(p1.name)
+print(p1.age)
