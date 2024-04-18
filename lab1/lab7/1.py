@@ -37,8 +37,8 @@ def rotate_image(image, angle):
     return pygame.transform.rotate(image, angle)
 
 while run:
-    # Get current time
-    time_now = datetime.datetime.now()
+    # Get current time and add 5 hours for GMT+5
+    time_now = datetime.datetime.now() + datetime.timedelta(hours=5)
     minutes = time_now.minute
     seconds = time_now.second
     

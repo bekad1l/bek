@@ -1,86 +1,64 @@
-import pygame
+import os
+import tkinter as tk
+from tkinter import PhotoImage
+from pygame import mixer
 
-pygame.init()
+class MusicPlayer:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Мой плеер")
 
-width , height = 652, 330
+        # Загружаем фоновое изображение
+        self.background_img = PhotoImage(file="image/background.png")
+        self.background_label = tk.Label(root, image=self.background_img)
+        self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-surface = pygame.display.set_mode((width, height))
-name_pro = pygame.display.set_caption("Music player")
+        # Создаем панель с кнопками управления
+        control_frame = tk.Frame(root, bg="white", bd=5)
+        control_frame.place(relx=0.5, rely=1, anchor="s")
 
-#load image 512 x 512
-background = pygame.image.load('image/background.png')
-stop_icon = pygame.image.load('image/stop_icon.png')
-next_icon = pygame.image.load('image/next_icon.png')
-previous_icon = pygame.image.load('image/previous_icon.png')
-play_icon = pygame.image.load('image/play_icon.png')
+        # Создаем кнопки управления с использованием Canvas
+        self.previous_img = PhotoImage(file="image/previous_icon.png").subsample(2, 2)  # уменьшаем размер изображения
+        self.previous_button = tk.Button(control_frame, image=self.previous_img, command=self.previous_music, bd=0)
+        self.previous_button.grid(row=0, column=0, padx=10)
 
+        self.play_img = PhotoImage(file="image/play_icon.png").subsample(2, 2)  # уменьшаем размер изображения
+        self.play_button = tk.Button(control_frame, image=self.play_img, command=self.play_music, bd=0)
+        self.play_button.grid(row=0, column=1, padx=10)
 
-#load music
-pygame.mixer.music.load('music/Billie_Eilish-bad_guy.mp3')
-pygame.mixer.music.load('music/Frank Sinatra-I Love You Baby.mp3')
-pygame.mixer.music.load('music/Maneskin-I Wanna Be Your Slave.mp3')
+        self.stop_img = PhotoImage(file="image/stop_icon.png").subsample(2, 2)  # уменьшаем размер изображения
+        self.stop_button = tk.Button(control_frame, image=self.stop_img, command=self.stop_music, bd=0)
+        self.stop_button.grid(row=0, column=2, padx=10)
 
-playlist = {
-    1: 'music/Billie_Eilish-bad_guy.mp3',
-    2: 'music/Frank Sinatra-I Love You Baby.mp3',
-    3: 'music/Maneskin-I Wanna Be Your Slave.mp3'
-}
+        self.next_img = PhotoImage(file="image/next_icon.png").subsample(2, 2)  # уменьшаем размер изображения
+        self.next_button = tk.Button(control_frame, image=self.next_img, command=self.next_music, bd=0)
+        self.next_button.grid(row=0, column=3, padx=10)
 
-count_track = 1
-run = True
-FPS = 60
-is_playing = False
-tickrate = pygame.time.Clock()
-paused_time = 0
+        # Инициализируем pygame mixer
+        mixer.init()
 
-while run:
+        # Путь к папке с музыкой
+        self.music_folder = "music"
+        self.music_files = [os.path.join(self.music_folder, file) for file in os.listdir(self.music_folder) if file.endswith(".mp3")]
+        self.current_index = 0
 
-    surface.blit(background, (0, 0))
-    surface.blit(previous_icon, (100,155))
-    
-    if is_playing == False:
-        surface.blit(play_icon,(262,155))
-    else:
-        surface.blit(stop_icon, (262,155))
-        
-    surface.blit(next_icon, (424,155))
+    def play_music(self):
+        if not mixer.music.get_busy():
+            mixer.music.load(self.music_files[self.current_index])
+            mixer.music.play()
 
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if (event.key == pygame.K_SPACE or event.key == pygame.K_F7) and is_playing == False:
-                # pause need for didn`t replay music
-                if paused_time != 0:
-                    pygame.mixer.music.unpause()
-                    is_playing = True
-                else:
-                    pygame.mixer.music.load(playlist[count_track])
-                    pygame.mixer.music.play()
-                    is_playing = True
-            elif event.key == pygame.K_F5 or event.key == pygame.K_LEFT:
-                if count_track == 1:
-                    count_track = 3
-                else:
-                    count_track -= 1
-                pygame.mixer.music.load(playlist[count_track])
-                pygame.mixer.music.play()
-                paused_time = 0
-            elif event.key == pygame.K_F6 or event.key == pygame.K_RIGHT:
-                if count_track == 3:
-                    count_track = 1
-                else:
-                    count_track += 1
-                pygame.mixer.music.load(playlist[count_track])
-                pygame.mixer.music.play()
-                paused_time = 0
-            elif (event.key == pygame.K_SPACE or event.key == pygame.K_F7) and is_playing == True:
-                pygame.mixer.music.pause()
-                is_playing = False
-                paused_time = pygame.mixer.music.get_pos()
+    def stop_music(self):
+        mixer.music.stop()
 
-        if event.type == pygame.QUIT:
-            run = False
+    def next_music(self):
+        self.current_index = (self.current_index + 1) % len(self.music_files)
+        self.play_music()
 
-    pygame.display.update()
-    tickrate.tick(FPS)
+    def previous_music(self):
+        self.current_index = (self.current_index - 1) % len(self.music_files)
+        self.play_music()
 
-pygame.quit()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = MusicPlayer(root)
+    root.mainloop()
