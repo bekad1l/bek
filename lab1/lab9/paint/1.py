@@ -1,102 +1,387 @@
 import pygame
-pygame.init() # Initialize pygame
+import random
+from math import cos, sin, pi
 
-painting = []
+pygame.init()
 
-timer = pygame.time.Clock() # We need it for future use with fps
+#Size and other variable
+WIDTH = 800
+HEIGHT = 600
+FPS = 60
+clock = pygame.time.Clock()
+points = []
+last_pos = (0, 0)
+w = 3
 
-fps = 60 # Set Frames per second
+#Setting up Display
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Paint")
 
-activeColor = (0, 0, 0)
-activeShape = 0
+#Colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+color_mode = BLUE
+screen.fill(WHITE)
 
-w = 800 # Set Window Size
-h = 600
+#Font, Icons and Buttons
+welcome_font = pygame.font.SysFont('Arial', 50)
+font = pygame.font.SysFont('Arial', 30)
+rect_img = pygame.image.load("C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint")
+rect_img = pygame.transform.scale(rect_img, (30, 30))
+but1_rect = rect_img.get_rect(center = (40, 30))
+circle_img = pygame.image.load("C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint")
+circle_img = pygame.transform.scale(circle_img, (30, 30))
+but2_rect = circle_img.get_rect(center = (100, 30))
+pencil_img = pygame.image.load("C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint")
+pencil_img = pygame.transform.scale(pencil_img, (30, 30))
+but_line_rect = pencil_img.get_rect(center = (160, 30))
+eraser_img = pygame.image.load("C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint")
+eraser_img = pygame.transform.scale(eraser_img, (30, 30))
+but3_rect = eraser_img.get_rect(center = (220, 30))
+square_img = pygame.image.load('C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint')
+square_img = pygame.transform.scale(square_img, (30, 30))
+but4_rect = square_img.get_rect(center = (280, 30))
+rtriangle_img = pygame.image.load('C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint')
+rtriangle_img = pygame.transform.scale(rtriangle_img, (30, 30))
+but5_rect = rtriangle_img.get_rect(center = (340, 30))
+etriangle_img = pygame.image.load('/Users/damirnurmagambetov/Desktop/PP2_Labs/Lab_9/3_task/icons/eqtriangle.png')
+etriangle_img = pygame.transform.scale(etriangle_img, (30, 30))
+but6_rect = etriangle_img.get_rect(center = (400, 30))
+rhombus_img = pygame.image.load('C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint')
+rhombus_img = pygame.transform.scale(rhombus_img, (30, 30))
+but7_rect = rhombus_img.get_rect(center = (460, 30))
+red_img = pygame.image.load("C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint")
+red_img = pygame.transform.scale(red_img, (30, 30))
+but_r_rect = red_img.get_rect(center = (520, 30))
+green_img = pygame.image.load("C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint")
+green_img = pygame.transform.scale(green_img, (30, 30))
+but_g_rect = green_img.get_rect(center = (580, 30))
+blue_img = pygame.image.load("C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint")
+blue_img = pygame.transform.scale(blue_img, (30, 30))
+but_b_rect = blue_img.get_rect(center = (640, 30))
+saver_img = pygame.image.load("C:\Users\Admin\OneDrive\Рабочий стол\games\bek\lab1\lab9\paint")
+saver_img = pygame.transform.scale(saver_img, (60, 45))
+but_saver_rect = pencil_img.get_rect(center = (700, 30))
 
-screen = pygame.display.set_mode([w, h]) # Set Screen
+#Boolean variables
+line = False
+circle = False
+rectangle = False
+eraser = False
+draw = False
+erasing = False
+square = False
+rtriagnle = False
+etriangle = False
+rhombus = False
 
-pygame.display.set_caption("Paint") # Set Window Title
+#Function for drawing line
+def drawLine(screen, start, end, width, color_mode):   
+    x1 = start[0]
+    y1 = start[1]
+    x2 = end[0]
+    y2 = end[1]
 
-def drawDisplay():
-    pygame.draw.rect(screen, 'gray', [0, 0, w, 100]) # Draw Display
-    pygame.draw.line(screen, 'black', [0, 100], [w, 100]) # Draw Line separator
-    rect = [pygame.draw.rect(screen, 'black', [10, 10, 80, 80]), 0]
-    pygame.draw.rect(screen, 'white', [20, 20, 60, 60])
-    circ = [pygame.draw.rect(screen, 'black', [100, 10, 80, 80]), 1]
-    pygame.draw.circle(screen, 'white', [140, 50], 30)
-    # rhomb
-    rhomb = [pygame.draw.rect(screen, 'black', [190, 10, 80, 80]), 2]
-    pygame.draw.polygon(screen, 'white', [(230, 20), (260, 50), (230, 80), (200, 50)])
-    # equiva
-    tri = [pygame.draw.rect(screen, 'black', [280, 10, 80, 80]), 3]
-    pygame.draw.polygon(screen, 'white', [(320, 20), (290, 80), (350, 80)])
-    
-    blue = [pygame.draw.rect(screen, (0, 0, 255), [w - 35, 10, 25, 25]), (0, 0, 255)] # Draw colors
-    red = [pygame.draw.rect(screen, (255, 0, 0), [w - 35, 35, 25, 25]), (255, 0, 0)] # Draw colors
-    green = [pygame.draw.rect(screen, (0, 255, 0), [w - 60, 10, 25, 25]), (0, 255, 0)] # Draw colors
-    yellow = [pygame.draw.rect(screen, (255, 255, 0), [w - 60, 35, 25, 25]), (255, 255, 0)] # Draw colors
-    black = [pygame.draw.rect(screen, (0, 0, 0), [w - 85, 10, 25, 25]), (0, 0, 0)] # Draw colors
-    purple = [pygame.draw.rect(screen, (255, 0, 255), [w - 85, 35, 25, 25]), (255, 0, 255)] # Draw colors
-    eraser = [pygame.draw.rect(screen, (255, 255, 255), [w - 150, 20, 25, 25]), (255, 255, 255)] # Draw Eraser
-    return [blue, red, green, yellow, black, purple, eraser], [rect, circ, rhomb, tri]
+    dx = abs(x1-x2)
+    dy = abs(y1-y2)
+    A = y2 - y1
+    B = x1 - x2
+    C = x2 * y1 - x1 * y2
 
-def drawPaint(paints):
-    for paint in paints:
-        color, pos, shape = paint
-        if shape == 3:
-            pygame.draw.polygon(screen, color, [(pos[0], pos[1] - 20), (pos[0] - 17, pos[1] + 10), (pos[0] + 17, pos[1] + 10)])
-        elif shape == 2:
-            pygame.draw.polygon(screen, color, [(pos[0], pos[1] - 15), (pos[0] + 15, pos[1]), (pos[0], pos[1] + 15), (pos[0] - 15, pos[1])])
-        elif shape == 1:  # Circle
-            pygame.draw.circle(screen, color, pos, 15)
-        elif shape == 0:  # Rectangle
-            pygame.draw.rect(screen, color, [pos[0]-15, pos[1]-15, 30, 30])
+    if dx > dy:
+        if x1 > x2:
+            x1, x2 = x2, x1
+            y1, y2 = y2, y1
+
+        for x in range(x1, x2):
+            y = (-C - A * x) / B
+            pygame.draw.circle(screen, color_mode, (x, y), width)
+    else:   
+        if y1 > y2:
+            x1, x2 = x2, x1
+            y1, y2 = y2, y1
+        for y in range(y1, y2):
+            x = (-C - B * y) / A
+            pygame.draw.circle(screen, color_mode, (x, y), width)
+
+#Function for drawing circle
+def drawCircle(screen, start, end, size, color):
+    x1 = start[0]
+    y1 = start[1]
+    x2 = end[0]
+    y2 = end[1]
+
+    width = abs(x1-x2)
+    height = abs(y1-y2)
+
+    if x1 <= x2:
+        if y1 < y2:
+            pygame.draw.ellipse(screen, color, (x1, y1, width, height), size)
+        else:
+            pygame.draw.ellipse(screen, color, (x1, y2, width, height), size)
+    else:
+        if y1 < y2:
+            pygame.draw.ellipse(screen, color, (x2, y1, width, height), size)
+        else:
+            pygame.draw.ellipse(screen, color, (x2, y2, width, height), size)
+
+#Function for drawing rectangle
+def drawRect(screen, start, end, size, color):
+    x1 = start[0]
+    y1 = start[1]
+    x2 = end[0]
+    y2 = end[1]
+
+    width = abs(x1-x2)
+    height = abs(y1-y2)
+
+    if x1 <= x2:
+        if y1 < y2:
+            pygame.draw.rect(screen, color, (x1, y1, width, height), size)
+        else:
+            pygame.draw.rect(screen, color, (x1, y2, width, height), size)
+    else:
+        if y1< y2:
+            pygame.draw.rect(screen, color, (x2, y1, width, height), size)
+        else:
+            pygame.draw.rect(screen, color, (x2, y2, width, height), size)
+
+#Function for drawing square
+def drawSquare(screen, start, end, size, color):
+    x1 = start[0]
+    y1 = start[1]
+    x2 = end[0]
+    y2 = end[1]
+
+    a = abs(x1-x2)
+    if x1 <= x2:
+        if y1 < y2:
+            pygame.draw.rect(screen, color, (x1, y1, a, a), size)
+        else:
+            pygame.draw.rect(screen, color, (x1, y2, a, a), size)
+    else:
+        if y1 < y2:
+            pygame.draw.rect(screen, color, (x2, y1, a, a), size)
+        else:
+            pygame.draw.rect(screen, color, (x2, y2, a, a), size)
+
+#Function for drawing right triangle
+def drawrtriangle(screen, start, end, size, color):
+    x1, y1, x2, y2 = start[0], start[1], end[0], end[1] 
+    difx = abs(x1-x2) 
+    dify = abs(y1-y2) 
+    if x1 <= x2: 
+        if y1 < y2: 
+            pygame.draw.polygon(screen, color, [(x1, y1), (x1, y1 + dify), (x2, y2)], size)    
+        else: 
+            pygame.draw.polygon(screen, color, [(x1, y1), (x1, y1 - dify), (x2, y2)], size)    
+             
+    else: 
+        if y1 < y2: 
+            pygame.draw.polygon(screen, color, [(x1, y1), (x1, y1 + dify), (x2, y2)], size)    
+        else: 
+            pygame.draw.polygon(screen, color, [(x1, y1), (x1, y1 - dify), (x2, y2)], size)    
+
+#Function for drawing equilateral triangle
+def drawetriangle(pos, color):
+    pygame.draw.polygon(screen, color, pos, 3)
+
+#Function for drawing rhombus
+def drawrhombus(pos, color):
+    pygame.draw.polygon(screen, color, pos, 3)
+
+#Main loop
+while True:
+    clock.tick(FPS)
         
+    pygame.draw.rect(screen, (158, 158, 158), but1_rect)
+    screen.blit(rect_img, but1_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but2_rect)
+    screen.blit(circle_img, but2_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but3_rect)
+    screen.blit(eraser_img, but3_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but_r_rect)
+    screen.blit(red_img, but_r_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but_g_rect)
+    screen.blit(green_img, but_g_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but_b_rect)
+    screen.blit(blue_img, but_b_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but_line_rect)
+    screen.blit(pencil_img, but_line_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but_saver_rect)
+    screen.blit(saver_img, but_saver_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but4_rect)
+    screen.blit(square_img, but4_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but5_rect)
+    screen.blit(rtriangle_img, but5_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but6_rect)
+    screen.blit(etriangle_img, but6_rect.topleft)
+    pygame.draw.rect(screen, (128, 128, 128), but7_rect)
+    screen.blit(rhombus_img, but7_rect.topleft)
+    pygame.display.flip()
+
+    #Changing color by pressing letters(r, g, b)
+    pressed_keys = pygame.key.get_pressed()
+    if pressed_keys[pygame.K_r]:
+        color_mode = RED
+    elif pressed_keys[pygame.K_g]:
+        color_mode = GREEN
+    elif pressed_keys[pygame.K_b]:
+        color_mode = BLUE
         
-def draw():
-    global activeColor, activeShape, mouse
-    if mouse[1] > 100:
-        if activeShape == 0:
-            pygame.draw.rect(screen, activeColor, [mouse[0]-15, mouse[1]-15, 30, 30]) # Draw
-        if activeShape == 1:
-            pygame.draw.circle(screen, activeColor, mouse, 15)
-        if activeShape == 2:
-            pygame.draw.polygon(screen, activeColor, [(mouse[0], mouse[1] - 15), (mouse[0] + 15, mouse[1]), (mouse[0], mouse[1] + 15), (mouse[0] - 15, mouse[1])])
-        if activeShape == 3:
-            pygame.draw.polygon(screen, activeColor, [(mouse[0], mouse[1] - 15), (mouse[0] - 15, mouse[1] + 15), (mouse[0] + 15, mouse[1] + 15)])
-run = True
-while run:
-    timer.tick(fps) # Set FPS
-    screen.fill('white') # Fill Screen
-    colors, shape = drawDisplay() # Draw Display
-
-    mouse = pygame.mouse.get_pos() # Get Mouse Position
-    draw()
-    
-    click = pygame.mouse.get_pressed()[0] # Get Mouse Button Pressed
-    if click and mouse[1] > 100:
-        painting.append((activeColor, mouse, activeShape)) # Add Mouse Position to List
-    drawPaint(painting)
-
-    for event in pygame.event.get(): # Set quit event
+    for event in pygame.event.get():
+        pos = pygame.mouse.get_pos()
         if event.type == pygame.QUIT:
-            run = False
+            exit()
+                
+        #Pressing Button
+        if event.type==pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if but1_rect.collidepoint(event.pos):
+                line = False
+                rectangle = True
+                circle = False
+                eraser = False
+                square = False
+                rhombus = False
+                etriangle = False
+                rtriagnle = False
+            if but2_rect.collidepoint(event.pos):
+                line = False
+                rectangle = False
+                circle = True
+                eraser = False
+                square = False
+                rhombus = False
+                etriangle = False
+                rtriagnle = False
+            if but3_rect.collidepoint(event.pos):
+                line = False
+                rectangle = False
+                circle = False
+                eraser = True
+                square = False
+                rhombus = False
+                etriangle = False
+                rtriagnle = False
+            if but_line_rect.collidepoint(event.pos):
+                line = True
+                rectangle = False
+                circle = False
+                eraser = False
+                square = False
+                rhombus = False
+                etriangle = False
+                rtriagnle = False
+            if but_b_rect.collidepoint(event.pos):
+                color_mode = BLUE
+            if but_g_rect.collidepoint(event.pos):
+                color_mode = GREEN
+            if but_r_rect.collidepoint(event.pos):
+                color_mode = RED
+            if but_saver_rect.collidepoint(event.pos):
+                pygame.image.save(screen, 'paint.png')
+            if but4_rect.collidepoint(event.pos):
+                line = False
+                rectangle = False
+                circle = False
+                eraser = False
+                square = True
+                rhombus = False
+                etriangle = False
+                rtriagnle = False
+            if but5_rect.collidepoint(event.pos):
+                line = False
+                rectangle = False
+                circle = False
+                eraser = False
+                square = False
+                rhombus = False
+                etriangle = False
+                rtriagnle = True
+            if but6_rect.collidepoint(event.pos):
+                line = False
+                rectangle = False
+                circle = False
+                eraser = False
+                square = False
+                rhombus = False
+                etriangle = True
+                rtriagnle = False
+            if but7_rect.collidepoint(event.pos):
+                line = False
+                rectangle = False
+                circle = False
+                eraser = False
+                square = False
+                rhombus = True
+                etriangle = False
+                rtriagnle = False
 
-        if event.type == pygame.KEYDOWN: # Set quit event
-            if event.key == pygame.K_ESCAPE:
-                run = False
+        #Checking boolean values and drawing shapes
+        if line:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                draw = True
+                last_pos = pos
+                pygame.draw.circle(screen, color_mode, pos, w)
+            
+            if event.type == pygame.MOUSEBUTTONUP:
+                draw = False
+            
+            if event.type == pygame.MOUSEMOTION:
+                if draw:
+                    drawLine(screen, last_pos, pos, w, color_mode)
+                last_pos = pos
 
-        if event.type == pygame.KEYDOWN: # Set quit event
-            if event.key == pygame.K_SPACE:
-                painting = []
+        if rectangle:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                last_pos = pos
+            if event.type == pygame.MOUSEBUTTONUP:
+                drawRect(screen, last_pos, pos, w, color_mode)
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for i in colors:
-                if i[0].collidepoint(event.pos):
-                    activeColor = i[1]
-            for i in shape:
-                if i[0].collidepoint(event.pos):
-                    activeShape = i[1]
-    
+        if circle:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                last_pos = pos
+            if event.type == pygame.MOUSEBUTTONUP:
+                drawCircle(screen, last_pos, pos, w, color_mode)
 
-    pygame.display.flip() # Update Screen
+        if eraser:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                (x, y) = pos
+                erasing = True
+                pygame.draw.rect(screen, WHITE, (x, y, 50, 50))
+            if event.type == pygame.MOUSEMOTION:
+                if erasing:
+                    pygame.draw.rect(screen, WHITE, (pos[0], pos[1], 50, 50))
+            if event.type == pygame.MOUSEBUTTONUP:
+                erasing = False
+
+        if square:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                last_pos = pos
+            if event.type == pygame.MOUSEBUTTONUP:
+                drawSquare(screen, last_pos, pos, w, color_mode)
+
+        if rtriagnle:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                last_pos = pos
+            if event.type == pygame.MOUSEBUTTONUP:
+                drawrtriangle(screen, last_pos, pos, w, color_mode)
+
+        if etriangle:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                last_pos = pos
+            if event.type == pygame.MOUSEBUTTONUP:
+                drawetriangle([last_pos, pos,((pos[0] - last_pos[0])*cos(pi/3) - (pos[1] - last_pos[1])*sin(pi/3) + last_pos[0], (pos[0] - last_pos[0])*sin(pi/3) + (pos[1] - last_pos[1])*cos(pi/3) + last_pos[1])], color_mode)
+
+        if rhombus:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                last_pos = pos
+            if event.type == pygame.MOUSEBUTTONUP:
+                d = (((last_pos[0] - pos[0]) ** 2 + (last_pos[1] - pos[1]) ** 2) ** 0.5)
+                drawrhombus([last_pos, (last_pos[0] + d, last_pos[1]), (pos[0] + d, pos[1]), pos], color_mode)
+
+    pygame.display.update()
+    pygame.display.flip()
